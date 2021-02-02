@@ -26,4 +26,6 @@ func main() {
 		os.Exit(1)
 	}
 
+	findLatestRelease(userAndRepo[0], userAndRepo[1])
+
 }
