@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 )
@@ -34,6 +35,12 @@ func main() {
 	}
 
 	fmt.Printf("Docker is %s, %s\n", *baseDockerImage, *mode)
-	findLatestRelease(userAndRepo[0], userAndRepo[1])
+	latestReleaseDetails, err := findLatestRelease(userAndRepo[0], userAndRepo[1], *assetName)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("LAtest release is ", latestReleaseDetails.assetVersion)
 
 }
