@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -11,6 +12,16 @@ type gitHubAssetDetails struct {
 	assetName    string
 	assetURL     string
 	assetVersion string
+}
+
+type Asset struct {
+	Name        string `json:"name"`
+	DownloadURL string `json:"browser_download_url"`
+}
+
+type releaseResponse struct {
+	Name   string  `json:"name"`
+	Assets []Asset `json:"assets"`
 }
 
 func findLatestRelease(gitHubUser string, gitHubRepository string, gitHubAssetName string) (latestVersion gitHubAssetDetails, err error) {
@@ -39,8 +50,11 @@ func findLatestRelease(gitHubUser string, gitHubRepository string, gitHubAssetNa
 
 	fmt.Println(newStr)
 
-	assetDetails.assetURL = "lala"
-	assetDetails.assetVersion = "1.2.3"
+	releaseResp := releaseResponse{}
+	json.Unmarshal(buf.Bytes(), &releaseResp)
+
+	assetDetails.assetURL = releaseResp.Assets[0].DownloadURL
+	assetDetails.assetVersion = releaseResp.Name
 
 	return assetDetails, nil
 }

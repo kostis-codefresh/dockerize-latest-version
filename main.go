@@ -41,6 +41,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Println("LAtest release is ", latestReleaseDetails.assetVersion)
+	fmt.Printf("LAtest release is %s, %s\n ", latestReleaseDetails.assetVersion, latestReleaseDetails.assetURL)
 
 }
