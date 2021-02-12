@@ -10,10 +10,13 @@ import (
 func main() {
 	baseDockerImage := flag.String("image", "", "<base container image>")
 	gitHubRepo := flag.String("repo", "", "<GitHub repository>")
-	checkOnly := flag.Bool("check", false, "[Do not download the release just check if there is a new one]")
+	assetName := flag.String("asset", "", "<GitHub release asset name>")
+	mode := flag.String("mode", "check-and-download", "[check] only for latest version, [download] always latest version, [check-and-download] to download only if newer")
+
 	flag.Parse()
-	if *baseDockerImage == "" || *gitHubRepo == "" {
-		fmt.Println("Missing arguments. -image and -repo are required. Use -h for full syntax")
+
+	if *baseDockerImage == "" || *gitHubRepo == "" || *assetName == "" {
+		fmt.Println("Missing arguments. -repo, -asset and -image are required. Use -h for full syntax")
 		os.Exit(1)
 	}
 
@@ -30,7 +33,7 @@ func main() {
 		os.Exit(1)
 	}
 
-	fmt.Printf("Docker is %s, %v\n", *baseDockerImage, *checkOnly)
+	fmt.Printf("Docker is %s, %s\n", *baseDockerImage, *mode)
 	findLatestRelease(userAndRepo[0], userAndRepo[1])
 
 }
