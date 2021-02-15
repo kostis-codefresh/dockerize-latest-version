@@ -41,6 +41,10 @@ func main() {
 		log.Fatal(err)
 	}
 
-	fmt.Printf("LAtest release is %s, %s\n ", latestReleaseDetails.assetVersion, latestReleaseDetails.assetURL)
+	if latestReleaseDetails.assetURL == "" {
+		log.Fatal("No asset found for version " + latestReleaseDetails.assetVersion)
+	}
+
+	fmt.Printf("Latest release is %s, %s\n ", latestReleaseDetails.assetVersion, latestReleaseDetails.assetURL)
 
 }

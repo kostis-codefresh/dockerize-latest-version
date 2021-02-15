@@ -10,21 +10,21 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestRealExample1(t *testing.T) {
+func TestGitHubReleasePartialName(t *testing.T) {
 
 	assetFound := readJSON("testdata/codefresh-cli.json", "macos-x64.tar.gz")
 
 	assert.Equal(t, "https://github.com/codefresh-io/cli/releases/download/v0.74.9/codefresh-v0.74.9-macos-x64.tar.gz", assetFound, "Found incorrect asset URL")
 }
 
-func TestRealExample2(t *testing.T) {
+func TestGitHubReleaseNoAssets(t *testing.T) {
 
 	assetFound := readJSON("testdata/pulumi.json", "my-pulumi")
 
 	assert.Equal(t, "", assetFound, "Found incorrect asset URL")
 }
 
-func TestNoAssets(t *testing.T) {
+func TestGitHubReleaseExactName(t *testing.T) {
 
 	assetFound := readJSON("testdata/solo-gloo.json", "glooctl-linux-amd64")
 

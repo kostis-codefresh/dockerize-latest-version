@@ -50,9 +50,9 @@ func findLatestRelease(gitHubUser string, gitHubRepository string, gitHubAssetNa
 	if err != nil {
 		return assetDetails, err
 	}
-	newStr := buf.String()
+	// newStr := buf.String()
 
-	fmt.Println(newStr)
+	// fmt.Println(newStr)
 
 	releaseResp := releaseResponse{}
 	err = json.Unmarshal(buf.Bytes(), &releaseResp)
@@ -62,7 +62,6 @@ func findLatestRelease(gitHubUser string, gitHubRepository string, gitHubAssetNa
 
 	assetDetails.assetURL = filterAssets(releaseResp, assetDetails.assetName)
 
-	// releaseResp.Assets[0].DownloadURL
 	assetDetails.assetVersion = releaseResp.Name
 
 	return assetDetails, nil
