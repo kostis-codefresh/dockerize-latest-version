@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 )
 
 type gitHubAssetDetails struct {
@@ -59,12 +60,7 @@ func findLatestRelease(gitHubUser string, gitHubRepository string, gitHubAssetNa
 		return assetDetails, err
 	}
 
-	//No assets were published in GitHub for this project. No need to look further
-	if len(releaseResp.Assets) == 0 {
-		return assetDetails, nil
-	}
-
-	assetDetails.assetURL = filterAssets(releaseResp)
+	assetDetails.assetURL = filterAssets(releaseResp, assetDetails.assetName)
 
 	// releaseResp.Assets[0].DownloadURL
 	assetDetails.assetVersion = releaseResp.Name
@@ -72,7 +68,18 @@ func findLatestRelease(gitHubUser string, gitHubRepository string, gitHubAssetNa
 	return assetDetails, nil
 }
 
-func filterAssets(releasesFound releaseResponse) (assetURL string) {
-	releasesFound.Name = "lala"
-	return "dff"
+func filterAssets(releasesFound releaseResponse, assetName string) (assetURL string) {
+
+	//No assets were published in GitHub for this project. No need to look further
+	if len(releasesFound.Assets) == 0 {
+		return ""
+	}
+
+	for _, possibleAsset := range releasesFound.Assets {
+		if strings.Contains(possibleAsset.Name, assetName) {
+			return possibleAsset.DownloadURL
+		}
+	}
+
+	return ""
 }
