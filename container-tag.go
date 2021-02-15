@@ -113,3 +113,14 @@ func createRegistryClient(ctx context.Context, domain string) (*registry.Registr
 		Timeout:  timeout,
 	})
 }
+
+func containerTagExists(baseImage string, tag string) bool {
+	imageAndTag := dockerImageName{
+		BaseImage: baseImage,
+		HasTag:    true,
+		Tag:       tag,
+	}
+
+	registryConnection := connectToRegistryOfImage(&imageAndTag)
+	return checkDockerImage(registryConnection, imageAndTag)
+}

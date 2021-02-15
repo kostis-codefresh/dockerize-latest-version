@@ -47,4 +47,13 @@ func main() {
 
 	fmt.Printf("Latest release is %s, %s\n ", latestReleaseDetails.assetVersion, latestReleaseDetails.assetURL)
 
+	foundInRegistry := containerTagExists(*baseDockerImage, latestReleaseDetails.assetVersion)
+
+	if foundInRegistry {
+		fmt.Printf("Found existing container image %s:%s. Nothing to do, exiting", *baseDockerImage, latestReleaseDetails.assetVersion)
+		os.Exit(0)
+	}
+
+	fmt.Printf("Missing container image %s:%s", *baseDockerImage, latestReleaseDetails.assetVersion)
+
 }

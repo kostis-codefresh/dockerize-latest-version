@@ -9,58 +9,35 @@ import (
 )
 
 func TestCheckDockerImageWithValidImage(t *testing.T) {
-	imageAndTag := dockerImageName{
-		BaseImage: "codefresh/cf-sendmail",
-		HasTag:    true,
-		Tag:       "latest",
-	}
 
-	registryConnection := connectToRegistryOfImage(&imageAndTag)
-	foundInRegistry := checkDockerImage(registryConnection, imageAndTag)
+	foundInRegistry := containerTagExists("codefresh/cf-sendmail", "latest")
 
 	assert.True(t, foundInRegistry, "Should be found in docker registry")
 }
 
 func TestCheckDockerImageWithFullDomain(t *testing.T) {
-	imageAndTag := dockerImageName{
-		BaseImage: "docker.io/codefresh/cf-sendmail",
-		HasTag:    true,
-		Tag:       "latest",
-	}
 
-	registryConnection := connectToRegistryOfImage(&imageAndTag)
-	foundInRegistry := checkDockerImage(registryConnection, imageAndTag)
+	foundInRegistry := containerTagExists("docker.io/codefresh/cf-sendmail", "latest")
 
 	assert.True(t, foundInRegistry, "Should be found in docker registry")
 }
 
 func TestCheckDockerImageWithInvalidImage(t *testing.T) {
-	imageAndTag := dockerImageName{
-		BaseImage: "foo",
-		HasTag:    true,
-		Tag:       "bar",
-	}
 
-	registryConnection := connectToRegistryOfImage(&imageAndTag)
-	foundInRegistry := checkDockerImage(registryConnection, imageAndTag)
+	foundInRegistry := containerTagExists("foo", "bar")
 
 	assert.False(t, foundInRegistry, "Should be found in docker registry")
 }
 
 func TestCheckGCRImageWithValidImage(t *testing.T) {
-	imageAndTag := dockerImageName{
-		BaseImage: "gcr.io/cloud-builders/mvn",
-		HasTag:    true,
-		Tag:       "3.5.0-jdk-8",
-	}
 
-	registryConnection := connectToRegistryOfImage(&imageAndTag)
-	foundInRegistry := checkDockerImage(registryConnection, imageAndTag)
+	foundInRegistry := containerTagExists("gcr.io/cloud-builders/mvn", "3.5.0-jdk-8")
 
 	assert.True(t, foundInRegistry, "Should be found in docker registry")
 }
 
 func TestCheckGCRImageWithoutTag(t *testing.T) {
+
 	imageAndTag := dockerImageName{
 		BaseImage: "gcr.io/cloud-builders/git",
 		HasTag:    false,
@@ -71,17 +48,13 @@ func TestCheckGCRImageWithoutTag(t *testing.T) {
 	foundInRegistry := checkDockerImage(registryConnection, imageAndTag)
 
 	assert.True(t, foundInRegistry, "Should be found in docker registry")
+
+	assert.True(t, foundInRegistry, "Should be found in docker registry")
 }
 
 func TestUnknownRegistry(t *testing.T) {
-	imageAndTag := dockerImageName{
-		BaseImage: "r.cfcr.io/jbadeau/gauge-typescript-plugin",
-		HasTag:    false,
-		Tag:       "",
-	}
 
-	registryConnection := connectToRegistryOfImage(&imageAndTag)
-	foundInRegistry := checkDockerImage(registryConnection, imageAndTag)
+	foundInRegistry := containerTagExists("r.cfcr.io/jbadeau/gauge-typescript-plugin", "")
 
 	assert.False(t, foundInRegistry, "Should be found in docker registry")
 }
