@@ -48,7 +48,12 @@ func main() {
 		log.Fatal("No asset found for version " + latestReleaseDetails.assetVersion)
 	}
 
-	fmt.Printf("Latest release is %s, %s\n ", latestReleaseDetails.assetVersion, latestReleaseDetails.assetURL)
+	fmt.Printf("Latest release is %s, %s\n", latestReleaseDetails.assetVersion, latestReleaseDetails.assetURL)
+
+	if *mode == "download" {
+		fetchURLToLocalFile(latestReleaseDetails.assetURL)
+		os.Exit(0)
+	}
 
 	foundInRegistry := containerTagExists(*baseDockerImage, latestReleaseDetails.assetVersion)
 
@@ -58,14 +63,24 @@ func main() {
 	}
 
 	fmt.Printf("Missing container image %s:%s\n", *baseDockerImage, latestReleaseDetails.assetVersion)
-	localFilePath := path.Base(latestReleaseDetails.assetURL)
-	fmt.Printf("Downloading %s to ./%s\n", latestReleaseDetails.assetURL, localFilePath)
 
-	err = downloadFile(latestReleaseDetails.assetURL, localFilePath)
+	if *mode == "check-and-download" {
+
+		fetchURLToLocalFile(latestReleaseDetails.assetURL)
+
+	}
+
+}
+
+func fetchURLToLocalFile(url string) {
+	localFilePath := path.Base(url)
+	fmt.Printf("Downloading %s to ./%s\n", url, localFilePath)
+
+	err := downloadFile(url, localFilePath)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println("Downloaded: " + latestReleaseDetails.assetURL)
+	fmt.Println("Downloaded: " + url)
 
 }
 
