@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
-	"fmt"
+	"log"
 	"net/http"
 	"strings"
 )
@@ -30,7 +30,6 @@ func findLatestRelease(gitHubUser string, gitHubRepository string, gitHubAssetNa
 		assetName: gitHubAssetName,
 	}
 
-	fmt.Println("Looking for " + gitHubRepository + " at " + gitHubUser)
 	url := "https://api.github.com/repos/" + gitHubUser + "/" + gitHubRepository + "/releases/latest"
 	resp, err := http.Get(url)
 	if err != nil {
@@ -39,20 +38,17 @@ func findLatestRelease(gitHubUser string, gitHubRepository string, gitHubAssetNa
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		fmt.Println("Non-OK HTTP status:", resp.StatusCode)
+		log.Println("Non-OK HTTP status:", resp.StatusCode)
 		return assetDetails, errors.New("Could not access " + url)
 	}
 
-	fmt.Println("Response status:", resp.Status)
+	log.Println("Response status of api.github.com:", resp.Status)
 
 	buf := new(bytes.Buffer)
 	_, err = buf.ReadFrom(resp.Body)
 	if err != nil {
 		return assetDetails, err
 	}
-	// newStr := buf.String()
-
-	// fmt.Println(newStr)
 
 	releaseResp := releaseResponse{}
 	err = json.Unmarshal(buf.Bytes(), &releaseResp)
