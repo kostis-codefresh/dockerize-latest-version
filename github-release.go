@@ -14,14 +14,14 @@ type gitHubAssetDetails struct {
 	assetVersion string
 }
 
-type Asset struct {
+type asset struct {
 	Name        string `json:"name"`
 	DownloadURL string `json:"browser_download_url"`
 }
 
 type releaseResponse struct {
 	Name   string  `json:"name"`
-	Assets []Asset `json:"assets"`
+	Assets []asset `json:"assets"`
 }
 
 func findLatestRelease(gitHubUser string, gitHubRepository string, gitHubAssetName string) (latestVersion gitHubAssetDetails, err error) {
@@ -45,13 +45,19 @@ func findLatestRelease(gitHubUser string, gitHubRepository string, gitHubAssetNa
 	fmt.Println("Response status:", resp.Status)
 
 	buf := new(bytes.Buffer)
-	buf.ReadFrom(resp.Body)
+	_, err = buf.ReadFrom(resp.Body)
+	if err != nil {
+		return assetDetails, err
+	}
 	newStr := buf.String()
 
 	fmt.Println(newStr)
 
 	releaseResp := releaseResponse{}
-	json.Unmarshal(buf.Bytes(), &releaseResp)
+	err = json.Unmarshal(buf.Bytes(), &releaseResp)
+	if err != nil {
+		return assetDetails, err
+	}
 
 	assetDetails.assetURL = releaseResp.Assets[0].DownloadURL
 	assetDetails.assetVersion = releaseResp.Name
