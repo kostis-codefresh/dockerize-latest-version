@@ -59,8 +59,20 @@ func findLatestRelease(gitHubUser string, gitHubRepository string, gitHubAssetNa
 		return assetDetails, err
 	}
 
-	assetDetails.assetURL = releaseResp.Assets[0].DownloadURL
+	//No assets were published in GitHub for this project. No need to look further
+	if len(releaseResp.Assets) == 0 {
+		return assetDetails, nil
+	}
+
+	assetDetails.assetURL = filterAssets(releaseResp)
+
+	// releaseResp.Assets[0].DownloadURL
 	assetDetails.assetVersion = releaseResp.Name
 
 	return assetDetails, nil
+}
+
+func filterAssets(releasesFound releaseResponse) (assetURL string) {
+	releasesFound.Name = "lala"
+	return "dff"
 }
