@@ -47,7 +47,10 @@ func readJSON(fileName string, assetName string) string {
 	}
 
 	releaseResp := releaseResponse{}
-	json.Unmarshal(jsonData, &releaseResp)
+	err = json.Unmarshal(jsonData, &releaseResp)
+	if err != nil {
+		log.Fatal(err)
+	}
 	return filterAssets(releaseResp, assetName)
 
 }
