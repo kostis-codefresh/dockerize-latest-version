@@ -3,8 +3,11 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"log"
+	"net/http"
 	"os"
+	"path"
 	"strings"
 )
 
@@ -54,6 +57,35 @@ func main() {
 		os.Exit(0)
 	}
 
-	fmt.Printf("Missing container image %s:%s", *baseDockerImage, latestReleaseDetails.assetVersion)
+	fmt.Printf("Missing container image %s:%s\n", *baseDockerImage, latestReleaseDetails.assetVersion)
+	localFilePath := path.Base(latestReleaseDetails.assetURL)
+	fmt.Printf("Downloading %s to ./%s\n", latestReleaseDetails.assetURL, localFilePath)
 
+	err = downloadFile(latestReleaseDetails.assetURL, localFilePath)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println("Downloaded: " + latestReleaseDetails.assetURL)
+
+}
+
+func downloadFile(url string, targetFilepath string) error {
+
+	// Get the data
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	// Create the file
+	out, err := os.Create(targetFilepath)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	// Write the body to file
+	_, err = io.Copy(out, resp.Body)
+	return err
 }
