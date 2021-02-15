@@ -1,4 +1,4 @@
-module github.com/kostis-codefres/dockerize-latest-release
+module github.com/kostis-codefresh/dockerize-latest-release
 
 go 1.13
 
