@@ -1,14 +1,24 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"path"
 	"strings"
 )
+
+type assetToBeDockerizedDetails struct {
+	Version  string `json:"version"`
+	Filename string `json:"filename"`
+}
+
+//OutputFile is the file that contains the http response as is
+const OutputFile string = "asset-details.json"
 
 func main() {
 	baseDockerImage := flag.String("image", "", "<base container image>")
@@ -48,11 +58,18 @@ func main() {
 
 	log.Printf("Latest release is %s, %s\n", latestReleaseDetails.assetVersion, latestReleaseDetails.assetURL)
 
-	if *mode == "download" {
-		fetchURLToLocalFile(latestReleaseDetails.assetURL)
+	//We were asked to only check for last github release and do nothing else
+	if *mode == "check" {
 		os.Exit(0)
 	}
 
+	//We were asked to download the latest release regardless of whether a Docker image exists for it.
+	if *mode == "download" {
+		_ = fetchURLToLocalFile(latestReleaseDetails.assetURL)
+		os.Exit(0)
+	}
+
+	//Since we are here we will download release only if there isn't a Docker image for it
 	foundInRegistry := containerTagExists(*baseDockerImage, latestReleaseDetails.assetVersion)
 
 	if foundInRegistry {
@@ -62,23 +79,33 @@ func main() {
 
 	log.Printf("Missing container image %s:%s\n", *baseDockerImage, latestReleaseDetails.assetVersion)
 
-	if *mode == "check-and-download" {
+	localFileName := fetchURLToLocalFile(latestReleaseDetails.assetURL)
 
-		fetchURLToLocalFile(latestReleaseDetails.assetURL)
-
+	details := assetToBeDockerizedDetails{
+		Version:  latestReleaseDetails.assetVersion,
+		Filename: localFileName,
 	}
+	jsonValue, _ := json.Marshal(details)
+
+	err = ioutil.WriteFile(OutputFile, jsonValue, 0700)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	log.Println("Saved response to " + OutputFile)
 
 }
 
-func fetchURLToLocalFile(url string) {
+func fetchURLToLocalFile(url string) (localFileName string) {
 	localFilePath := path.Base(url)
-	log.Printf("Downloading %s to ./%s\n", url, localFilePath)
+	log.Printf("Downloading %s to ./app/%s\n", url, localFilePath)
 
-	err := downloadFile(url, localFilePath)
+	err := downloadFile(url, "./app/"+localFilePath)
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Println("Downloaded: " + url)
+	return localFilePath
 
 }
 
