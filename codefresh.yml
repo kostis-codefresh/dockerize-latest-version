@@ -1,0 +1,88 @@
+# More examples of Codefresh YAML can be found at
+# https://codefresh.io/docs/docs/yaml-examples/examples/
+
+version: "1.0"
+# Stages can help you organize your steps in stages
+stages:
+  - "clone"
+  - "test"  
+  - "build"
+  - "deploy"
+
+
+steps:
+  clone:
+    title: "Cloning repository"
+    type: "git-clone"
+    repo: "kostis-codefresh/dockerize-latest-version"
+    revision: "${{CF_BRANCH}}"
+    git: "github-1"
+    stage: "clone"
+
+  lint:
+    title: "Linting"
+    type: "freestyle" 
+    image: "golangci/golangci-lint" 
+    working_directory: "${{clone}}" 
+    fail_fast: false
+    commands:
+      - "golangci-lint run -v"
+    environment:
+      - GOPATH=/codefresh/volume/go
+      - CGO_ENABLED=0
+    stage: "test"
+
+  unit-test:
+    title: "Unit tests"
+    type: "freestyle" 
+    image: "golang:1.13" 
+    working_directory: "${{clone}}" 
+    commands:
+      - "go test -v"
+    environment:
+      - GOPATH=/codefresh/volume/go
+    stage: "test"
+ 
+  integration:
+     title: "Integration tests"
+     type: "freestyle" 
+     image: "golang:1.13" 
+     working_directory: "${{clone}}" 
+     commands:
+       - "go test -tags=integration -v"
+     environment:
+       - GOPATH=/codefresh/volume/go
+     stage: "test"
+     
+  compile:
+    title: "Compiling code"
+    type: "freestyle" 
+    image: "golang:1.13" 
+    working_directory: "${{clone}}" 
+    commands:
+      - "go build"
+    environment:
+      - GOPATH=/codefresh/volume/go
+    stage: "build"
+    
+  build:
+    title: "Building Docker image"
+    type: "build"
+    image_name: "kostiscodefresh/dockerize-latest-version"
+    working_directory: "${{clone}}"
+    tag: "${{CF_BRANCH_TAG_NORMALIZED}}"
+    dockerfile: "Dockerfile"
+    disable_push: true
+    stage: "build"
+  push:
+    title: "Pushing Docker image"
+    type: push
+    stage: "deploy"
+    arguments:
+      candidate: '${{build}}'
+      tag: latest
+      image_name: "kostiscodefresh/dockerize-latest-version"
+      registry: "dockerhub"
+
+
+

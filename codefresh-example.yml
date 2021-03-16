@@ -1,0 +1,101 @@
+# More examples of Codefresh YAML can be found at
+# https://codefresh.io/docs/docs/yaml-examples/examples/
+
+version: "1.0"
+# Stages can help you organize your steps in stages
+stages:
+  - "clone"
+  - "glooctl"  
+  - "argo-rollouts"  
+
+
+
+steps:
+  clone:
+    title: "Cloning repository"
+    type: "git-clone"
+    repo: "kostis-codefresh/dockerize-latest-version"
+    revision: "main"
+    git: "github-1"
+    stage: "clone"
+
+  check_gloo:
+    title: "Checking for release"
+    type: "freestyle" 
+    image: "kostiscodefresh/dockerize-latest-version" 
+    working_directory: "${{clone}}" 
+    fail_fast: false
+    commands:
+      - rm -f asset-details.json
+      - "/app/dockerize-latest-release -repo solo-io/gloo -asset glooctl-linux-amd64 -image kostiscodefresh/glooctl"
+      - cf_export LATEST_VERSION=$(cat asset-details.json | jq  -r .version)
+      - cf_export FILENAME=$(cat asset-details.json | jq  -r .filename)
+      - rm -rf /codefresh/volume/autodocker
+      - mkdir /codefresh/volume/autodocker
+      - cp ./app/* /codefresh/volume/autodocker
+    stage: "glooctl"
+
+  build_gloo:
+    title: "Building Docker image"
+    type: "build"
+    image_name: "kostiscodefresh/glooctl"
+    working_directory: "/codefresh/volume/autodocker"
+    tag: latest
+    tags:
+      - "${{LATEST_VERSION}}"
+      - latest
+    dockerfile: "Dockerfile"
+    registry: dockerhub
+    build_arguments:
+          - FILENAME=${{FILENAME}}
+    stage: "glooctl"
+    when:
+      condition:
+        all: 
+          whenVarExists: '"${{FILENAME}}" != ""'
+
+  check_rollouts:
+    title: "Checking for release"
+    type: "freestyle" 
+    image: "kostiscodefresh/dockerize-latest-version" 
+    working_directory: "${{clone}}" 
+    fail_fast: false
+    commands:
+      - rm -f asset-details.json
+      - "/app/dockerize-latest-release -repo argoproj/argo-rollouts -asset kubectl-argo-rollouts-linux-amd64 -image kostiscodefresh/kubectl-argo-rollouts"
+      - cf_export LATEST_VERSION=$(cat asset-details.json | jq  -r .version)
+      - cf_export FILENAME=$(cat asset-details.json | jq  -r .filename)
+      - rm -rf /codefresh/volume/autodocker
+      - mkdir /codefresh/volume/autodocker
+      - cp ./app/* /codefresh/volume/autodocker
+    stage: "argo-rollouts"
+
+  build_rollouts:
+    title: "Building Docker image"
+    type: "build"
+    image_name: "kostiscodefresh/kubectl-argo-rollouts"
+    working_directory: "/codefresh/volume/autodocker"
+    tag: latest
+    tags:
+      - "${{LATEST_VERSION}}"
+      - latest
+    dockerfile: "Dockerfile"
+    registry: dockerhub
+    build_arguments:
+          - FILENAME=${{FILENAME}}
+    stage: "argo-rollouts"
+    when:
+      condition:
+        all: 
+          whenVarExists: '"${{FILENAME}}" != ""'
+
+
+
+
+
+
+
+
+
+
+
